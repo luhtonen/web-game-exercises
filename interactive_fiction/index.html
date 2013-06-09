@@ -6,21 +6,33 @@
   <link href="css/main.css" rel="stylesheet"/>
 </head>
 <body>
+  <div id="player_inventory" class="itemable">
+    <span class="item-container"><h3>Inventory:</h3>
+      <div class="inventory-box empty"></div>
+      <div class="inventory-box empty"></div>
+      <div class="inventory-box empty"></div>
+    </span>
+  </div>
   <div id="impress">
-    <div id="1" class="step slide">
+    <div id="1" class="step slide itemable">
       <div class="slide-text">
-      <p>There's a time machine over there. Flip the switch?</p>
-      <p><a href="#2">FLIP</a> it.</p>
-      <p><a href="#3">WAIT</a> for your dad, who is a scientist, to come home</p>
+        <p>There's a time machine over there. Flip the switch?</p>
+        <p><a href="#2">FLIP</a> it.</p>
+        <p><a href="#3">WAIT</a> for your dad, who is a scientist, to come home</p>
+      </div>
+      <div class="menu item-container">
+        <div class="inventory-box">
+          <img src="images/bat.png" alt="bat" class="item" id="bat">
+        </div>
+      </div>
     </div>
-    </div>
-    <div id="2" class="step slide" data-x="1500">
+    <div id="2" class="step slide itemable" data-x="1500">
       <div class="slide-text">
         <p>You went back in time. It was fun.</p>
       </div>
       <div class="menu"><a href="#1">START OVER</a></div>
     </div>
-    <div id="3" class="step slide" data-x="-1500">
+    <div id="3" class="step slide itemable" data-x="-1500">
       <div class="slide-text">
         <p>You hung around for a while, and then your dad came home.</p>
         <p>Then he helped you with your homework.</p>
@@ -31,5 +43,7 @@
   </div>
   <script src="js/impress.js"></script>
   <script>impress().init();</script>
+  <script src="js/game.js"></script>
+  <script src="js/dragDrop.js"></script>
 </body>
 </html>
