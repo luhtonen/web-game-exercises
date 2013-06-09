@@ -4,7 +4,7 @@ function handleDragStart(e) {
   e.dataTransfer.setData('text/html', this.innerHTML);
   var dragIcon = document.createElement('img');
   var imageName = this.firstChild.id;
-  dragIcon.src = "../images/" + imageName + '.png';
+  dragIcon.src = "images/" + imageName + '.png';
   e.dataTransfer.setDragImage(dragIcon, -10, 10);
 }
 
