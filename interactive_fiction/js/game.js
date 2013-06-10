@@ -85,7 +85,7 @@ game.slide = (function(){
     inventory[game.slide.currentSlide()] = null;
   };
   var findTextNode = function(slideId){
-    return document.querySelector("#" + slideId + " .slide-text.event-text");
+    return document.querySelector("#" + slideId + " .slide-text .event-text");
   };
   var getInventory = function(slideId){
     return inventory[slideId];
@@ -104,12 +104,12 @@ game.slide = (function(){
       slideId = this.currentSlide();
     };
     var item = inventory[slideId];
-    var inventoryBox = document.querySelector ('#'+slideId+'.inventory-box');
+    var inventoryBox = document.querySelector ('#'+slideId+' .inventory-box');
     if (item === null){
       inventoryBox.innerHTML = "";
       inventoryBox.classList.add("empty");
     } else{
-      inventoryBox.innerHTML = "<img src='"+item+".png' alt='"+item+"'class='item' id='"+item+"'>";
+      inventoryBox.innerHTML = "<img src='images/"+item+".png' alt='"+item+"' class='item' id='"+item+"'>";
       inventoryBox.classList.remove("empty");
     }
   };
@@ -128,7 +128,7 @@ game.playerInventory = (function(){
     bat: false
   };
   var clearInventory = function(){
-    playerInventoryBoxes = document.querySelectorAll('#player_inventory.inventory-box');
+    playerInventoryBoxes = document.querySelectorAll('#player_inventory .inventory-box');
     [].forEach.call(playerInventoryBoxes, function(inventoryBox) {
       inventoryBox.classList.add("empty");
       inventoryBox.innerHTML = "";
@@ -149,11 +149,11 @@ game.playerInventory = (function(){
   var draw = function(){
     clearInventory();
     var counter = 0;
-    var inventoryBoxes = document.querySelectorAll('#player_inventory.inventory-box');
+    var inventoryBoxes = document.querySelectorAll('#player_inventory .inventory-box');
     for(var item in this.items){
       if(this.items[item] === true){
         inventoryBoxes[counter].classList.remove("empty");
-        inventoryBoxes[counter].innerHTML = "<img src='"+item+".png' alt='"+item+"' class='item' id='"+item+"'>";
+        inventoryBoxes[counter].innerHTML = "<img src='images/"+item+".png' alt='"+item+"' class='item' id='"+item+"'>";
       }
       counter = counter + 1;
     };
