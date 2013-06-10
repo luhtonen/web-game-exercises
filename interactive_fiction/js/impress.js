@@ -19,6 +19,13 @@
 /*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, latedef:true, newcap:true,
          noarg:true, noempty:true, undef:true, strict:true, browser:true */
 
+var game = {
+    stepsTaken: [],
+    updateAfterStep: function(stepId) {
+        this.stepsTaken.push(stepId);
+    }
+};
+
 // You are one of those who like to know how thing work inside?
 // Let me show you the cogs that make impress.js run...
 (function ( document, window ) {
@@ -411,6 +418,9 @@
                 step = step < 0 ? steps[ steps.length + step] : steps[ step ];
             } else if (typeof step === "string") {
                 step = byId(step);
+            }
+            if(!!step.id === true) {
+                game.updateAfterStep(step.id);
             }
             return (step && step.id && stepsData["impress-" + step.id]) ? step : null;
         };
