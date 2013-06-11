@@ -22,7 +22,15 @@
 var game = {
     stepsTaken: [],
     updateAfterStep: function(stepId) {
-        this.stepsTaken.push(stepId);
+        if (this.stepsTaken.length < 1 || stepId !== this.stepsTaken[this.stepsTaken.length-1]) {
+            this.stepsTaken.push(stepId);
+            var numberOfSteps = this.stepsTaken.length;
+            var stepsElement = document.getElementById("steps");
+            var newStep = document.createElement("li");
+            newStep.innerHTML = "" + numberOfSteps +": <a href=#"+stepId+">"+stepId+"</a>";
+            var mostRecentStep = stepsElement.firstChild;
+            stepsElement.insertBefore(newStep, mostRecentStep);
+        };
     }
 };
 
