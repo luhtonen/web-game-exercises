@@ -10,24 +10,31 @@
 			var squareOutline = 5;
 			var max_rgb = 255;
 			var gray = Graphics.getRGB(20, 20, 20);
+			var placementArray = [];
 			function init() {
 				var rows = 5;
 				var cols = 6;
 				var squarePadding = 10;
 				canvas = document.getElementById('myCanvas');
 				stage = new Stage(canvas);
-				for (var i = 0; i < rows*cols; i++) {
-					var square = drawSquare();
-					square.x = (squareSide + squarePadding) * (i % cols);
-					square.y = (squareSide + squarePadding) * Math.floor(i / cols);
+				
+				var numberOfTiles = rows*cols;
+				setPlacementArray(numberOfTiles);
+				for (var i = 0; i < numberOfTiles; i++) {
+					var placement = getRandomPlacement(placementArray);
+					if (i % 2 === 0) {
+						var color = randomColor();
+					}
+					var square = drawSquare(color);
+					square.x = (squareSide + squarePadding) * (placement % cols);
+					square.y = (squareSide + squarePadding) * Math.floor(placement / cols);
 					stage.addChild(square);
 					stage.update();
 				}
 			}
-			function drawSquare() {
+			function drawSquare(color) {
 				var shape = new Shape();
 				var graphics = shape.graphics;
-				var color = randomColor();
 				graphics.setStrokeStyle(squareOutline);
 				graphics.beginStroke(gray);
 				graphics.beginFill(color);
@@ -39,6 +46,15 @@
 				var color2 = Math.floor(Math.random() * max_rgb);
 				var color3 = Math.floor(Math.random() * max_rgb);
 				return Graphics.getRGB(color, color2, color3);
+			}
+			function setPlacementArray(numTiles) {
+				for (var i = 0; i < numTiles; i++) {
+					placementArray.push(i);
+				} 
+			} 
+			function getRandomPlacement(placementArray) {
+				randomNumber = Math.floor(Math.random() * placementArray.length);
+				return placementArray.splice(randomNumber, 1)[0];
 			}
 		</script>
 	</head>
