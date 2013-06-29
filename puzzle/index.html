@@ -6,27 +6,38 @@
 		<script type="text/javascript">
 			var canvas;
 			var stage;
+			var squareSide = 70;
+			var squareOutline = 5;
+			var max_rgb = 255;
+			var gray = Graphics.getRGB(20, 20, 20);
 			function init() {
+				var rows = 5;
+				var cols = 6;
+				var squarePadding = 10;
 				canvas = document.getElementById('myCanvas');
 				stage = new Stage(canvas);
-				var square = drawSquare();
-				stage.addChild(square);
-				stage.update();
+				for (var i = 0; i < rows*cols; i++) {
+					var square = drawSquare();
+					square.x = (squareSide + squarePadding) * (i % cols);
+					square.y = (squareSide + squarePadding) * Math.floor(i / cols);
+					stage.addChild(square);
+					stage.update();
+				}
 			}
 			function drawSquare() {
 				var shape = new Shape();
 				var graphics = shape.graphics;
 				var color = randomColor();
-				graphics.setStrokeStyle(5);
-				graphics.beginStroke(Graphics.getRGB(20, 20, 20));
+				graphics.setStrokeStyle(squareOutline);
+				graphics.beginStroke(gray);
 				graphics.beginFill(color);
-				graphics.rect(5, 5, 70, 70);
+				graphics.rect(squareOutline, squareOutline, squareSide, squareSide);
 				return shape;
 			}
 			function randomColor() {
-				var color = Math.floor(Math.random()*255);
-				var color2 = Math.floor(Math.random()*255);
-				var color3 = Math.floor(Math.random()*255);
+				var color = Math.floor(Math.random() * max_rgb);
+				var color2 = Math.floor(Math.random() * max_rgb);
+				var color3 = Math.floor(Math.random() * max_rgb);
 				return Graphics.getRGB(color, color2, color3);
 			}
 		</script>
