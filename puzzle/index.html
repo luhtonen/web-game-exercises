@@ -11,6 +11,8 @@
 			var max_rgb = 255;
 			var gray = Graphics.getRGB(20, 20, 20);
 			var placementArray = [];
+			var highlight = Graphics.getRGB(255,255,0);
+			var tileClicked;
 			function init() {
 				var rows = 5;
 				var cols = 6;
@@ -26,9 +28,11 @@
 						var color = randomColor();
 					}
 					var square = drawSquare(color);
+					square.color = color;
 					square.x = (squareSide + squarePadding) * (placement % cols);
 					square.y = (squareSide + squarePadding) * Math.floor(placement / cols);
 					stage.addChild(square);
+					square.onPress = handleOnPress;
 					stage.update();
 				}
 			}
@@ -55,6 +59,22 @@
 			function getRandomPlacement(placementArray) {
 				randomNumber = Math.floor(Math.random() * placementArray.length);
 				return placementArray.splice(randomNumber, 1)[0];
+			}
+			function handleOnPress(event) {
+				var tile = event.target;
+				if(!!tileClicked === false) {
+					tile.graphics.setStrokeStyle(squareOutline).beginStroke(highlight).rect(squareOutline,squareOutline,squareSide,squareSide);
+					tileClicked = tile;
+				} else {
+					if(tileClicked.color === tile.color && tileClicked !== tile) {
+						tileClicked.visible = false;
+						tile.visible = false;
+					} else {
+						tileClicked.graphics.setStrokeStyle(squareOutline).beginStroke(gray).rect(squareOutline,squareOutline,squareSide,squareSide);
+					}
+					tileClicked = null;
+				}
+				stage.update();
 			}
 		</script>
 	</head>
