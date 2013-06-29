@@ -11,7 +11,6 @@
 			var max_rgb = 255;
 			var gray = Graphics.getRGB(20, 20, 20);
 			var placementArray = [];
-			var highlight = Graphics.getRGB(255,255,0);
 			var tileClicked;
 			function init() {
 				var rows = 5;
@@ -27,7 +26,7 @@
 					if (i % 2 === 0) {
 						var color = randomColor();
 					}
-					var square = drawSquare(color);
+					var square = drawSquare(gray);
 					square.color = color;
 					square.x = (squareSide + squarePadding) * (placement % cols);
 					square.y = (squareSide + squarePadding) * Math.floor(placement / cols);
@@ -62,17 +61,17 @@
 			}
 			function handleOnPress(event) {
 				var tile = event.target;
-				if(!!tileClicked === false) {
-					tile.graphics.setStrokeStyle(squareOutline).beginStroke(highlight).rect(squareOutline,squareOutline,squareSide,squareSide);
+				tile.graphics.beginFill(tile.color).rect(squareOutline,squareOutline,squareSide,squareSide);
+				if(!!tileClicked === false || tileClicked === tile) {
 					tileClicked = tile;
 				} else {
 					if(tileClicked.color === tile.color && tileClicked !== tile) {
 						tileClicked.visible = false;
 						tile.visible = false;
 					} else {
-						tileClicked.graphics.setStrokeStyle(squareOutline).beginStroke(gray).rect(squareOutline,squareOutline,squareSide,squareSide);
+						tileClicked.graphics.beginFill(gray).rect(squareOutline,squareOutline,squareSide,squareSide);
 					}
-					tileClicked = null;
+					tileClicked = tile;
 				}
 				stage.update();
 			}
