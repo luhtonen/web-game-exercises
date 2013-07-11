@@ -55,6 +55,7 @@
 					square.y = (squareSide + squarePadding) * Math.floor(placement / cols);
 					squares.push(square);
 					stage.addChild(square);
+					square.cache(0, 0, squareSide + squarePadding, squareSide + squarePadding);
 					square.onPress = handleOnPress;
 					stage.update();
 				};
@@ -87,7 +88,8 @@
 				var tile = event.target;
 				tile.graphics.beginFill(tile.color).rect(squareOutline,squareOutline,squareSide,squareSide);
 				if(!!tileClicked === false || tileClicked === tile) {
-					tileClicked = tile;
+				    tileClicked = tile;
+				    tileClicked.updateCache("source-overlay");
 				} else {
 					if(tileClicked.color === tile.color && tileClicked !== tile) {
 						tileClicked.visible = false;
@@ -100,8 +102,10 @@
 					} else {
 						tileClicked.graphics.beginFill(gray).rect(squareOutline,squareOutline,squareSide,squareSide);
 					}
+					tileClicked.updateCache("source-overlay");
+					tile.updateCache("source-overlay");
 					tileClicked = tile;
-				}
+                }
 				stage.update();
 			}
 			function tick() {
@@ -117,9 +121,12 @@
 			    for (var i = 0; i < squares.length; i++) {
 			        squares[i].graphics.beginFill(squares[i].color).rect(5, 5, 70, 70);
 			        squares[i].onPress = null;
+			        if (win === false) {
+			            squares[i].uncache();
+			        }
 			    }
 			    var replayParagraph = document.getElementById("replay");
-			    replayParagraph.innerHTML = "<a href='#' onclick='replay();'>Play Again?</a>";
+			    replayParagraph.innerHTML = "<a href='#' onclick='history.go(0);'>Play Again?</a>";
 
 			    if (win === true) {
 			        matchesFoundText.text = "You win!"
