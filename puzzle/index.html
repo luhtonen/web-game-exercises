@@ -57,7 +57,7 @@
 					stage.addChild(square);
 					square.onPress = handleOnPress;
 					stage.update();
-				}
+				};
 			}
 			function drawSquare(color) {
 				var shape = new Shape();
@@ -74,8 +74,8 @@
 				var color3 = Math.floor(Math.random() * max_rgb);
 				return Graphics.getRGB(color, color2, color3);
 			}
-			function setPlacementArray(numTiles) {
-				for (var i = 0; i < numTiles; i++) {
+			function setPlacementArray(numberOfTiles) {
+				for (var i = 0; i < numberOfTiles; i++) {
 					placementArray.push(i);
 				} 
 			} 
@@ -92,6 +92,11 @@
 					if(tileClicked.color === tile.color && tileClicked !== tile) {
 						tileClicked.visible = false;
 						tile.visible = false;
+						matchesFound++;
+						matchesFoundText.text = "Pairs Found: " + matchesFound + "/" + totalMatchesPossible;
+						if (matchesFound === totalMatchesPossible) {
+						    gameOver(true);
+						}
 					} else {
 						tileClicked.graphics.beginFill(gray).rect(squareOutline,squareOutline,squareSide,squareSide);
 					}
