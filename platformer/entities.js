@@ -11,10 +11,14 @@ var PlayerEntity = me.ObjectEntity.extend({
 		if (me.input.isKeyPressed('jump')) { this.doJump(); }
 		me.game.collide(this);
 		this.updateMovement();
+		if (this.bottom > 490) { this.gameOver(); }
 		if (this.vel.x != 0 || this.vel.y != 0) {
 			this.parent(this);
 			return true;
 		}
 		return false;
+	},
+	gameOver: function() {
+		me.state.change(me.state.MENU);
 	}
 });
