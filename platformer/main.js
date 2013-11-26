@@ -11,6 +11,7 @@ var jsApp = {
 	loaded: function() {
 		me.state.set(me.state.PLAY, new PlayScreen());
 		me.state.change(me.state.PLAY);
+		me.entityPool.add("player", PlayerEntity);
 	}
 };
 window.onReady(function() {
