@@ -14,6 +14,12 @@ var resources = [{
 	src: "player.png"
 },
 {
-	name: "titleScreen", type: "image",
+	name: "titleScreen", 
+	type: "image",
 	src: "titleScreen.png"
+},
+{
+	name: "coin",
+	type: "image",
+	src: "coin.png"
 }];

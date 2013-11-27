@@ -22,3 +22,12 @@ var PlayerEntity = me.ObjectEntity.extend({
 		me.state.change(me.state.MENU);
 	}
 });
+var CoinEntity = me.CollectableEntity.extend({
+	init: function(x, y, settings) {
+		this.parent(x, y, settings);
+	},
+	onCollision: function(res, obj) {
+		this.collidable = false;
+		me.game.remove(this);
+	}
+});
