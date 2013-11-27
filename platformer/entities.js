@@ -20,6 +20,13 @@ var PlayerEntity = me.ObjectEntity.extend({
 	},
 	gameOver: function() {
 		me.state.change(me.state.MENU);
+		document.getElementById('game_state').innerHTML = "Game Over";
+		document.getElementById('instructions').innerHTML = "";
+	},
+	youWin: function() {
+		me.state.change(me.state.MENU);
+		document.getElementById('game_state').innerHTML = "You Win!";
+		document.getElementById('instructions').innerHTML = "";
 	}
 });
 var CoinEntity = me.CollectableEntity.extend({
@@ -27,8 +34,12 @@ var CoinEntity = me.CollectableEntity.extend({
 		this.parent(x, y, settings);
 	},
 	onCollision: function(res, obj) {
+		me.gamestat.updateValue("coins", 1);
 		this.collidable = false;
 		me.game.remove(this);
+		if (me.gamestat.getItemValue("coins") === me.gamestat.getItemValue("totalCoins")) {
+			obj.youWin();
+		}
 	}
 });
 var EnemyEntity = me.ObjectEntity.extend({
