@@ -12,6 +12,7 @@ var jsApp = {
 		me.entityPool.add("player", PlayerEntity);
 		me.entityPool.add("coin", CoinEntity);
 		me.entityPool.add("EnemyEntity", EnemyEntity);
+		me.entityPool.add("boots", BootsEntity);
 		me.state.set(me.state.PLAY, new PlayScreen());
 		me.state.set(me.state.MENU, new TitleScreen());
 		me.state.transition("fade", "#2FA2C2", 250);
