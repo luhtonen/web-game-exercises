@@ -31,3 +31,40 @@ var CoinEntity = me.CollectableEntity.extend({
 		me.game.remove(this);
 	}
 });
+var EnemyEntity = me.ObjectEntity.extend({
+	init: function(x, y, settings) {
+		settings.image = "badguy";
+		settings.spritewidth = 16;
+		this.parent(x, y, settings);
+		this.startX = x;
+		this.endX = x + settings.width - settings.spritewidth;
+		this.pos.x = this.endX;
+		this.walkLeft = true;
+		this.setVelocity(2);
+		this.collidable = true;
+	},
+	onCollision: function(res, obj) {
+		obj.gameOver();
+	},
+	update: function() {
+		if (!this.visible) {
+			return false;
+		}
+		if (this.alive) {
+			if (this.walkLeft && this.pos.x <= this.startX) {
+				this.walkLeft = false;
+			} else if (!this.walkLeft && this.pos.x >= this.endX) {
+				this.walkLeft = true;
+			}
+			this.doWalk(this.walkLeft);
+		} else {
+			this.vel.x = 0;
+		}
+		this.updateMovement();
+		if (this.vel.x != 0 || this.vel.y != 0) {
+			this.parent(this);
+			return true;
+		}
+		return false;
+	}
+});
