@@ -54,6 +54,15 @@ $.playground().registerCallback(function() {
 		this.enemy.update();
 		if (($(this).x() + enemyWidth) < 0) {
 			$(this).remove();
+		} else {
+			var collided = $(this).collision("#playerBody,."+$.gQ.groupCssClass);
+			if (collided.length > 0) {
+				$("#player")[0].player.value += $(this)[0].enemy.value;
+				$("#player")[0].player.number = $(this)[0].enemy.value;
+				$("#player .value").html($("#player")[0].player.value);
+				$("#player .number").html($("#player")[0].player.number);
+				$(this).remove();
+			}
 		}
 	});
 	if (jQuery.gameQuery.keyTracker[37]) {
