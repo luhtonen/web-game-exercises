@@ -1,0 +1,7 @@
+.enemy {
+	color: red;
+	background-color: black;
+	font-size: 22px;
+	border: 1px solid red;
+	text-align: center;
+}
