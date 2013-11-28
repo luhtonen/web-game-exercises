@@ -13,12 +13,34 @@ function Player(placement, form, forms) {
 	this.placement = placement;
 	this.form = form;
 	this.forms = forms;
+	this.up = false;
+	this.down = false;
+	this.left = false;
+	this.right = false;
+	this.canChange = true;
 };
-Player.prototype.nextForm = function() {
-	this.form = this.forms[this.form["next"]];
+Player.prototype.changeForm = function(next_or_previous) {
+	this.form = this.forms[this.form[next_or_previous]];
 };
-Player.prototype.previousForm = function() {
-	this.form = this.forms[this.form["previous"]];
+Player.prototype.update = function(msDuration) {
+	if (this.up) {
+		if (this.canChange) {
+			this.changeForm('previous');
+			this.canChange = false;
+		}
+	}
+	if (this.down) {
+		if (this.canChange) {
+			this.changeForm('next');
+			this.canChange = false;
+		}
+	}
+	if (this.left) {
+		this.placement = this.placement - 14;
+	}
+	if (this.right) {
+		this.placement = this.placement + 14;
+	}
 };
 Player.prototype.draw = function(display) {
 	sprite = scaleUp(this.form.image);
@@ -54,23 +76,49 @@ function main() {
 		  previous: 'scissors'}
 	};
 	function handleEvent(event) {
-		if (gamejs.event.KEY_DOWN) {
+		if (event.type === gamejs.event.KEY_DOWN) {
 			if (event.key === gamejs.event.K_UP) {
-				player2.previousForm();
+				player2.up = true;
 			} else if (event.key === gamejs.event.K_DOWN) {
-				player2.nextForm();
+				player2.down = true;
 			} else if (event.key === gamejs.event.K_RIGHT) {
-				player2.placement = player2.placement + 25;
+				player2.right = true;
+				player2.left = false;
 			} else if (event.key === gamejs.event.K_LEFT) {
-				player2.placement = player2.placement - 25;
+				player2.left = true;
+				player2.right = false;
 			} else if (event.key === gamejs.event.K_w) {
-				player1.previousForm();
+				player1.up = true;
 			} else if (event.key === gamejs.event.K_a) {
-				player1.placement = player1.placement - 25;
+				player1.left = true;
+				player1.right = false;
 			} else if (event.key === gamejs.event.K_s) {
-				player1.nextForm();
+				player1.down = true;
 			} else if (event.key === gamejs.event.K_d) {
-				player1.placement = player1.placement + 25;
+				player1.right = true;
+				player1.left = false;
+			}
+		} else if (event.type === gamejs.event.KEY_UP) {
+			if (event.key === gamejs.event.K_UP) {
+				player2.up = false;
+				player2.canChange = true;
+			} else if (event.key === gamejs.event.K_DOWN) {
+				player2.down = false;
+				player2.canChange = true;
+			} else if (event.key === gamejs.event.K_RIGHT) {
+				player2.right = false;
+			} else if (event.key === gamejs.event.K_LEFT) {
+				player2.left = false;
+			} else if (event.key === gamejs.event.K_w) {
+				player1.up = false;
+				player1.canChange = true;
+			} else if (event.key === gamejs.event.K_a) {
+				player1.left = false;
+			} else if (event.key === gamejs.event.K_s) {
+				player1.down = false;
+				player1.canChange = true;
+			} else if (event.key === gamejs.event.K_d) {
+				player1.right = false;
 			}
 		}
 	};
@@ -82,6 +130,8 @@ function main() {
 		var defaultFont = new font.Font("40px Arial");
 		var textSurface = defaultFont.render("ROCK PAPER SCISSORS", "#000000");
 		display.blit(textSurface, [0, 160]);
+		player1.update();
+		player2.update();
 		player1.draw(display);
 		player2.draw(display);
 	};
