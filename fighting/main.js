@@ -1,15 +1,12 @@
 var gamejs = require('gamejs');
 var font = require('gamejs/font');
+var mask = require('gamejs/mask');
 var screenWidth = 1200;
 var screenHeight = 600;
-var scale = 8;
-var spriteSize = 16;
+var spriteSize = 128;
 var numSprites = 4;
 var up = 1, down = 2, left = 4, right = 8, canChange = 16;
 
-function scaleUp(image) {
-	return gamejs.transform.scale(image, [spriteSize*scale, spriteSize*scale]);
-};
 function Player(placement, form, forms) {
 	this.placement = placement;
 	this.form = form;
@@ -40,35 +37,41 @@ Player.prototype.update = function(msDuration) {
 	}
 };
 Player.prototype.draw = function(display) {
-	sprite = scaleUp(this.form.image);
-	display.blit(sprite, [spriteSize + this.placement, spriteSize]);
+	display.blit(this.form.image, [this.placement, 0]);
 };
 function main() {
 	var display = gamejs.display.setMode([screenWidth, screenHeight]);
-	var sprites = gamejs.image.load('sprites.png');
+	var sprites = gamejs.image.load('sprites_big.png');
 	var surfaceCache = [];
+	var maskCache = [];
 	for (var i = 0; i < numSprites; i++) {
 		var surface = new gamejs.Surface([spriteSize, spriteSize]);
 		var rect = new gamejs.Rect(spriteSize*i, 0, spriteSize, spriteSize);
 		var imgSize = new gamejs.Rect(0, 0, spriteSize, spriteSize);
 		surface.blit(sprites, imgSize, rect);
 		surfaceCache.push(surface);
+		var maskCacheElement = mask.fromSurface(surface);
+		maskCache.push(maskCacheElement);
 	};
 	var forms = {
 		rock: 
 		{ image: surfaceCache[0],
+		  mask: maskCache[0],
 		  next: 'paper',
 		  previous: 'scissors' },
 		paper: 
 		{ image: surfaceCache[1], 
+		  mask: maskCache[1],
 		  next: 'scissors',
 		  previous: 'rock' },
 		scissors:
 		{ image: surfaceCache[2],
+		  mask: maskCache[2],
 		  next: 'rock',
 		  previous: 'paper'},
 		person:
 		{ image: surfaceCache[3],
+		  mask: maskCache[3],
 		  next: 'rock',
 		  previous: 'scissors'}
 	};
@@ -131,10 +134,14 @@ function main() {
 		player2.update();
 		player1.draw(display);
 		player2.draw(display);
+		var hasMaskOverlap = player1.form.mask.overlap(player2.form.mask, [player1.placement - player2.placement, 0]);
+		if (hasMaskOverlap) {
+			console.log(hasMaskOverlap);
+		}
 	};
 	var player1 = new Player(0, forms['person'], forms);
 	var player2 = new Player(1000, forms['person'], forms);
 	gamejs.time.fpsCallback(gameTick, this, 60);
 };
-gamejs.preload(['sprites.png']);
+gamejs.preload(['sprites_big.png']);
 gamejs.ready(main);
