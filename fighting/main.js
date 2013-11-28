@@ -5,6 +5,7 @@ var screenHeight = 600;
 var scale = 8;
 var spriteSize = 16;
 var numSprites = 4;
+var up = 1, down = 2, left = 4, right = 8, canChange = 16;
 
 function scaleUp(image) {
 	return gamejs.transform.scale(image, [spriteSize*scale, spriteSize*scale]);
@@ -13,32 +14,28 @@ function Player(placement, form, forms) {
 	this.placement = placement;
 	this.form = form;
 	this.forms = forms;
-	this.up = false;
-	this.down = false;
-	this.left = false;
-	this.right = false;
-	this.canChange = true;
+	this.mask = 16;
 };
 Player.prototype.changeForm = function(next_or_previous) {
 	this.form = this.forms[this.form[next_or_previous]];
 };
 Player.prototype.update = function(msDuration) {
-	if (this.up) {
-		if (this.canChange) {
+	if (this.mask & up) {
+		if (this.mask & canChange) {
 			this.changeForm('previous');
-			this.canChange = false;
+			this.mask &= ~canChange;
 		}
 	}
-	if (this.down) {
-		if (this.canChange) {
+	if (this.mask & down) {
+		if (this.mask & canChange) {
 			this.changeForm('next');
-			this.canChange = false;
+			this.mask &= ~canChange;
 		}
 	}
-	if (this.left) {
+	if (this.mask & left) {
 		this.placement = this.placement - 14;
 	}
-	if (this.right) {
+	if (this.mask & right) {
 		this.placement = this.placement + 14;
 	}
 };
@@ -78,47 +75,47 @@ function main() {
 	function handleEvent(event) {
 		if (event.type === gamejs.event.KEY_DOWN) {
 			if (event.key === gamejs.event.K_UP) {
-				player2.up = true;
+				player2.mask |= up;
 			} else if (event.key === gamejs.event.K_DOWN) {
-				player2.down = true;
+				player2.mask |= down;
 			} else if (event.key === gamejs.event.K_RIGHT) {
-				player2.right = true;
-				player2.left = false;
+				player2.mask |= right;
+				player2.mask &= ~left;
 			} else if (event.key === gamejs.event.K_LEFT) {
-				player2.left = true;
-				player2.right = false;
+				player2.mask |= left;
+				player2.mask &= ~right;
 			} else if (event.key === gamejs.event.K_w) {
-				player1.up = true;
+				player1.mask |= up;
 			} else if (event.key === gamejs.event.K_a) {
-				player1.left = true;
-				player1.right = false;
+				player1.mask |= left;
+				player1.mask &= ~right;
 			} else if (event.key === gamejs.event.K_s) {
-				player1.down = true;
+				player1.mask |= down;
 			} else if (event.key === gamejs.event.K_d) {
-				player1.right = true;
-				player1.left = false;
+				player1.mask |= right;
+				player1.mask &= ~left;
 			}
 		} else if (event.type === gamejs.event.KEY_UP) {
 			if (event.key === gamejs.event.K_UP) {
-				player2.up = false;
-				player2.canChange = true;
+				player2.mask &= ~up;
+				player2.mask |= canChange;
 			} else if (event.key === gamejs.event.K_DOWN) {
-				player2.down = false;
-				player2.canChange = true;
+				player2.mask &= ~down;
+				player2.mask |= canChange;
 			} else if (event.key === gamejs.event.K_RIGHT) {
-				player2.right = false;
+				player2.mask &= ~right;
 			} else if (event.key === gamejs.event.K_LEFT) {
-				player2.left = false;
+				player2.mask &= ~left;
 			} else if (event.key === gamejs.event.K_w) {
-				player1.up = false;
-				player1.canChange = true;
+				player1.mask &= ~up;
+				player1.mask |= canChange;
 			} else if (event.key === gamejs.event.K_a) {
-				player1.left = false;
+				player1.mask &= ~left;
 			} else if (event.key === gamejs.event.K_s) {
-				player1.down = false;
-				player1.canChange = true;
+				player1.mask &= ~down;
+				player1.mask |= canChange;
 			} else if (event.key === gamejs.event.K_d) {
-				player1.right = false;
+				player1.mask &= ~right;
 			}
 		}
 	};
