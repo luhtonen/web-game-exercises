@@ -25,6 +25,31 @@ function Player() {
 };
 
 var missileSpeed = 10;
+var symbols = ["+", "-", "*", "/", "%", "|", "&", "<<", ">>"];
+var symbolIndex = 0;
+
+function functionEval(enemyValue, symbol, missileValue) {
+	switch(symbol) {
+		case "+":
+			return enemyValue + missileValue;
+		case "-":
+			return enemyValue - missileValue;
+		case "*":
+			return enemyValue * missileValue;
+		case "/":
+			return enemyValue / missileValue;
+		case "%":
+			return enemyValue % missileValue;
+		case "|":
+			return enemyValue | missileValue;
+		case "&":
+			return enemyValue & missileValue;
+		case "<<":
+			return enemyValue << missileValue;
+		case ">>":
+			return enemyValue >> missileValue;
+	};
+};
 
 var background1 = new $.gQ.Animation({imageURL: "background1.png"});
 var background2 = new $.gQ.Animation({imageURL: "background2.png"});
@@ -47,7 +72,7 @@ $.playground().addGroup("background", {width: PLAYGROUND_WIDTH, height: PLAYGROU
 .addGroup("playerMissileLayer", {width: PLAYGROUND_WIDTH, height: PLAYGROUND_HEIGHT}).end();
 
 $("#player")[0].player = new Player();
-$("#playerBody").html("<span class='value'>"+$("#player")[0].player.value+"</span><br /><span class='number'>"+$("#player")[0].player.number+"</span>");
+$("#playerBody").html("<span class='value'>"+$("#player")[0].player.value+"</span><br />(<span class='symbol'>"+symbols[symbolIndex]+"</span>) <span class='number'>"+$("#player")[0].player.number+"</span>");
 
 $.playground().registerCallback(function() {
 	$("#background1").x(($("#background1").x() - farParallaxSpeed - PLAYGROUND_WIDTH) % (-2 * PLAYGROUND_WIDTH) + PLAYGROUND_WIDTH);
@@ -78,7 +103,7 @@ $.playground().registerCallback(function() {
 			var collided = $(this).collision(".enemy,."+$.gQ.groupCssClass);
 			if (collided.length > 0) {
 				collided.each(function() {
-					var possible_value = $(this)[0].enemy.value + $("#player")[0].player.number;
+					var possible_value = Math.round(functionEval($(this)[0].enemy.value, symbols[symbolIndex], $("#player")[0].player.number));
 					if (possible_value < 10000 && possible_value > -10000) {
 						var thisEnemy = $(this)[0].enemy;
 						thisEnemy.value = possible_value;
@@ -131,6 +156,9 @@ $(document).keydown(function(e) {
 		$("#playerMissileLayer").addSprite(name, {posx: playerposx + playerWidth, posy: playerposy, width: playerWidth/2, height: playerHeight/2});
 		$("#"+name).addClass("playerMissiles");
 		$("#"+name).html("<div>" + $("#player")[0].player.number + "</div>");
+	} else if (e.keyCode === 70) {
+		symbolIndex = (symbolIndex+1) % symbols.length;
+		$("#player .symbol").text(symbols[symbolIndex]);
 	}
 });
 $.playground().startGame();
