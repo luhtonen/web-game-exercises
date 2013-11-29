@@ -24,6 +24,8 @@ function Player() {
 	this.number = 1;
 };
 
+var missileSpeed = 10;
+
 var background1 = new $.gQ.Animation({imageURL: "background1.png"});
 var background2 = new $.gQ.Animation({imageURL: "background2.png"});
 var background3 = new $.gQ.Animation({imageURL: "background3.png"});
@@ -40,7 +42,9 @@ $.playground().addGroup("background", {width: PLAYGROUND_WIDTH, height: PLAYGROU
 .addGroup("enemies", {width: PLAYGROUND_WIDTH, height: PLAYGROUND_HEIGHT})
 .end()
 .addGroup("player", {posx: 0, posy: PLAYGROUND_HEIGHT / 2, width: playerWidth, height: playerHeight})
-.addSprite("playerBody", {animation: '', posx: 0, poxy: 0, width: playerWidth, height: playerHeight});
+.addSprite("playerBody", {animation: '', posx: 0, poxy: 0, width: playerWidth, height: playerHeight})
+.end()
+.addGroup("playerMissileLayer", {width: PLAYGROUND_WIDTH, height: PLAYGROUND_HEIGHT}).end();
 
 $("#player")[0].player = new Player();
 $("#playerBody").html("<span class='value'>"+$("#player")[0].player.value+"</span><br /><span class='number'>"+$("#player")[0].player.number+"</span>");
@@ -61,6 +65,26 @@ $.playground().registerCallback(function() {
 				$("#player")[0].player.number = $(this)[0].enemy.value;
 				$("#player .value").html($("#player")[0].player.value);
 				$("#player .number").html($("#player")[0].player.number);
+				$(this).remove();
+			}
+		}
+	});
+	$(".playerMissiles").each(function() {
+		var posx = $(this).x();
+		if (posx > PLAYGROUND_WIDTH) {
+			this.remove();
+		} else {
+			$(this).x(missileSpeed, true);
+			var collided = $(this).collision(".enemy,."+$.gQ.groupCssClass);
+			if (collided.length > 0) {
+				collided.each(function() {
+					var possible_value = $(this)[0].enemy.value + $("#player")[0].player.number;
+					if (possible_value < 10000 && possible_value > -10000) {
+						var thisEnemy = $(this)[0].enemy;
+						thisEnemy.value = possible_value;
+						$(thisEnemy.node[0]).text(thisEnemy.value);
+					}
+				});
 				$(this).remove();
 			}
 		}
@@ -99,5 +123,14 @@ $.playground().registerCallback(function() {
 	enemyElement[0].enemy = new Enemy(enemyElement, enemyValue);
 	enemyElement.text(enemyValue);
 }, enemySpawnRate);
-
+$(document).keydown(function(e) {
+	if (e.keyCode === 32) {
+		var playerposx = $("#player").x();
+		var playerposy = $("#player").y();
+		var name = "playerMissile_" + (new Date()).getTime();
+		$("#playerMissileLayer").addSprite(name, {posx: playerposx + playerWidth, posy: playerposy, width: playerWidth/2, height: playerHeight/2});
+		$("#"+name).addClass("playerMissiles");
+		$("#"+name).html("<div>" + $("#player")[0].player.number + "</div>");
+	}
+});
 $.playground().startGame();

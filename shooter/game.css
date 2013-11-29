@@ -12,3 +12,13 @@
 	border: 1px solid white;
 	text-align: center;
 }
+.playerMissiles {
+	text-align: center;
+	border: solid 1px green;
+	font-size: 24px;
+	color: green;
+	background-color: black;
+}
+.number {
+	color: green;
+}
