@@ -10,10 +10,10 @@ var Game = function() {
 				for (var i = 0; i < numberOfRays; i++) {
 					var rayNumber = -numberOfRays / 2 + i;
 					var rayAngle = angleBetweenRays * rayNumber + player.angle;
-					this.castRay(rayAngle);
+					this.castRay(rayAngle, i);
 				}
 			};
-			this.castRay = function(rayAngle) {
+			this.castRay = function(rayAngle, i) {
 				var twoPi = Math.PI * 2;
 				rayAngle %= twoPi;
 				if (rayAngle < 0) { rayAngle += twoPi; }
@@ -65,14 +65,19 @@ var Game = function() {
 					x += dX;
 					y += dY;
 				}
-				this.draw(xHit, yHit);
+				this.draw(xHit, yHit, distance, i, rayAngle);
 			};
-			this.draw = function(rayX, rayY) {
+			this.draw = function(rayX, rayY, distance, i, rayAngle) {
 				minimap.context.beginPath();
 				minimap.context.moveTo(minimap.cellWidth*player.x, minimap.cellHeight*player.y);
 				minimap.context.lineTo(rayX * minimap.cellWidth, rayY * minimap.cellHeight);
 				minimap.context.closePath();
 				minimap.context.stroke();
+				var adjustedDistance = Math.cos(rayAngle - player.angle) * distance;
+				var wallHalfHeight = canvas.height / adjustedDistance / 2;
+				var wallTop = Math.max(0, canvas.halfHeight - wallHalfHeight);
+				var wallBottom = Math.min(canvas.height, canvas.halfHeight + wallHalfHeight);
+				canvas.drawSliver(i, wallTop, wallBottom, "#000");
 			};
 		}
 	};
@@ -155,15 +160,43 @@ var Game = function() {
 			};
 		}
 	};
+	var canvas = {
+		init: function() {
+			this.element = document.getElementById('canvas');
+			this.context = this.element.getContext("2d");
+			this.width = this.element.width;
+			this.height = this.element.height;
+			this.halfHeight = this.height / 2;
+			this.ground = "#DFD3C3";
+			this.sky = "#418DFB";
+			this.blank = function() {
+				this.context.clearRect(0, 0, this.width, this.height);
+				this.context.fillStyle = this.sky;
+				this.context.fillRect(0, 0, this.width, this.halfHeight);
+				this.context.fillStyle = this.ground;
+				this.context.fillRect(0, this.halfHeight, this.width, this.height);
+			};
+			this.drawSliver = function(sliver, wallTop, wallButtom, color) {
+				this.context.beginPath();
+				this.context.strokeStyle = color;
+				this.context.moveTo(sliver + .5, wallTop);
+				this.context.lineTo(sliver + .5, wallButtom);
+				this.context.closePath();
+				this.context.stroke();
+			};
+		}
+	};
 	this.draw = function() {
 		minimap.draw();
 		player.draw();
+		canvas.blank();
 		raycaster.castRays();
 	};
 	this.setup = function() {
 		minimap.init();
 		player.init();
 		raycaster.init();
+		canvas.init();
 	};
 	this.update = function() {
 		if (jaws.pressed("left")) { player.direction = -1; };
