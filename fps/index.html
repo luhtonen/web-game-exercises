@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>FPS</title>
-		<link rel="stylesheet" type="text/css" href="game.css" />
-	</head>
+    <head>
+        <title>FPS</title>
+        <link rel="stylesheet" type="text/css" href="game.css" />
+    </head>
 
-	<body>
-		<div>
-			<canvas id="canvas">Loading...</canvas>
-			<canvas id="minimap">Minimap</canvas>
-			<script type="text/javascript" src="jaws.js"></script>
-			<script type="text/javascript" src="game.js"></script>
-			<script>
-				jaws.start(Game);
-			</script>
-		</div>
-	</body>
+    <body>
+        <div>
+            <canvas id="canvas">Loading...</canvas>
+            <canvas id="minimap">Minimap</canvas>
+            <img id="camera" src="camera.png" />
+            <div id="screenshot-wrapper"><canvas id="screenshot">Screenshot</canvas></div>
+            <script type="text/javascript" src="jquery.js"></script>
+            <script type="text/javascript" src="filtrr2.js"></script>
+            <script type="text/javascript" src="jaws.js"></script>
+            <script type="text/javascript" src="game.js"></script>
+            <script>
+                jaws.start(Game);
+            </script>
+        </div>
+    </body>
 </html>
