@@ -2,11 +2,17 @@
  * @author Eduard Luhtonen
  */
 var Game = function() {
+    var twoPi = Math.PI * 2;
     var raycaster = {
         init: function() {
+            this.maxDistance = Math.sqrt(minimap.cellsAcross * minimap.cellsAcross + minimap.cellsDown * minimap.cellsDown);
             var numberOfRays = 300;
             var angleBetweenRays = .2 * Math.PI / 180;
             this.castRays = function() {
+                foregroundSlivers = [];
+                backgroundSlivers = [];
+                minimap.rays = [];
+                dino.show = false;
                 for (var i = 0; i < numberOfRays; i++) {
                     var rayNumber = -numberOfRays / 2 + i;
                     var rayAngle = angleBetweenRays * rayNumber + player.angle;
@@ -14,7 +20,6 @@ var Game = function() {
                 }
             };
             this.castRay = function(rayAngle, i) {
-                var twoPi = Math.PI * 2;
                 rayAngle %= twoPi;
                 if (rayAngle < 0) {
                     rayAngle += twoPi;
@@ -43,6 +48,10 @@ var Game = function() {
                         yHit = y;
                         wallType = map[wallY][wallX];
                         break;
+                    } else {
+                        if (dino.x === wallX && dino.y === wallY) {
+                            dino.show = true;
+                        }
                     }
                     x += dX;
                     y += dY;
@@ -66,27 +75,34 @@ var Game = function() {
                             wallType = map[wallY][wallX];
                         }
                         break;
+                    } else {
+                        if (dino.x === wallX && dino.y === wallY) {
+                            dino.show = true;
+                        }
                     }
                     x += dX;
                     y += dY;
                 }
-                this.draw(xHit, yHit, distance, i, rayAngle, wallType);
-            };
-            this.draw = function(rayX, rayY, distance, i, rayAngle, wallType) {
-                minimap.context.beginPath();
-                minimap.context.moveTo(minimap.cellWidth * player.x, minimap.cellHeight * player.y);
-                minimap.context.lineTo(rayX * minimap.cellWidth, rayY * minimap.cellHeight);
-                minimap.context.closePath();
-                minimap.context.stroke();
+                if (dino.show === true) {
+                    var dinoDistanceX = dino.x + .5 - player.x;
+                    var dinoDistanceY = dino.y + .5 - player.y;
+                    dino.angle = Math.atan(dinoDistanceY / dinoDistanceX) - player.angle;
+                    dino.distance = Math.sqrt(dinoDistanceX * dinoDistanceX + dinoDistanceY * dinoDistanceY);
+                }
+                minimap.rays.push([xHit, yHit]);
                 var adjustedDistance = Math.cos(rayAngle - player.angle) * distance;
                 var wallHalfHeight = canvas.height / adjustedDistance / 2;
                 var wallTop = Math.max(0, canvas.halfHeight - wallHalfHeight);
                 var wallBottom = Math.min(canvas.height, canvas.halfHeight + wallHalfHeight);
-                var percentageDistance = adjustedDistance / Math.sqrt(minimap.cellsAcross * minimap.cellsAcross + minimap.cellsDown * minimap.cellsDown);
+                var percentageDistance = adjustedDistance / this.maxDistance;
                 var brightness = 1 - percentageDistance;
                 var shade = Math.floor(palette.shades * brightness);
                 var color = palette.walls[wallType][shade];
-                canvas.drawSliver(i, wallTop, wallBottom, color);
+                if (adjustedDistance < dino.distance) {
+                    foregroundSlivers.push([i, wallTop, wallBottom, color]);
+                } else {
+                    backgroundSlivers.push([i, wallTop, wallBottom, color]);
+                }
             };
         }
     };
@@ -166,6 +182,16 @@ var Game = function() {
                         this.context.fillRect(this.cellWidth * x, this.cellHeight * y, this.cellWidth, this.cellHeight);
                     }
                 }
+                for (var i = 0; i < this.rays.length; i++) {
+                    this.drawRay(this.rays[i][0], this.rays[i][1]);
+                }
+            };
+            this.drawRay = function (xHit, yHit) {
+                this.context.beginPath();
+                this.context.moveTo(this.cellWidth*player.x, this.cellHeight*player.y);
+                this.context.lineTo(xHit * this.cellWidth, yHit * this.cellHeight);
+                this.context.closePath();
+                this.context.stroke();
             };
         }
     };
@@ -176,8 +202,6 @@ var Game = function() {
             this.width = this.element.width;
             this.height = this.element.height;
             this.halfHeight = this.height / 2;
-//            this.ground = "#DFD3C3";
-//            this.sky = "#418DFB";
             this.blank = function() {
                 this.context.clearRect(0, 0, this.width, this.height);
                 this.context.fillStyle = palette.sky;
@@ -208,6 +232,7 @@ var Game = function() {
                     filtered = true;
                     f = Filtrr2("#screenshot", function() {
                         this.expose(50).render();
+//                        this.sepia().render();
                     }, {store: false});
                 }
             });
@@ -243,11 +268,43 @@ var Game = function() {
             }
         }
     };
+    var dino = {
+        init: function() {
+            this.sprite = new jaws.Sprite({image: "dino.png", x: 0, y: canvas.height/2, anchor: "center"});
+            this.x = 12;
+            this.y = 4;
+            this.show = false;
+            this.distance = 1000;
+            this.draw = function () {
+                this.scale = raycaster.maxDistance / dino.distance / 2;
+                this.sprite.scaleTo(this.scale);
+                this.angle %= twoPi;
+                if (this.angle < 0) this.angle += twoPi;
+                this.angleInDegrees = this.angle * 180 / Math.PI;
+                var potentialWidth = 300*.2;
+                var halfAngularWidth = potentialWidth / 2;
+                this.adjustedAngle = this.angleInDegrees + halfAngularWidth;
+                if (this.adjustedAngle > 180 || this.adjustedAngle < -180) {
+                    this.adjustedAngle %= 180;
+                }
+                this.sprite.x = this.adjustedAngle / potentialWidth * canvas.width;
+                this.sprite.draw();
+            };
+        }
+    };
     this.draw = function() {
         minimap.draw();
         player.draw();
         canvas.blank();
-        raycaster.castRays();
+        for (var i = 0; i < backgroundSlivers.length; i++) {
+            canvas.drawSliver.apply(canvas, backgroundSlivers[i]);
+        }
+        if (dino.show) {
+            dino.draw();
+        }
+        for (var i = 0; i < foregroundSlivers.length; i++) {
+            canvas.drawSliver.apply(canvas, foregroundSlivers[i]);
+        }
     };
     this.setup = function() {
         camera.init();
@@ -256,8 +313,10 @@ var Game = function() {
         raycaster.init();
         canvas.init();
         palette.init();
+        dino.init();
     };
     this.update = function() {
+        raycaster.castRays();
         if (jaws.pressed("left")) {
             player.direction = -1;
         }
