@@ -14,6 +14,15 @@ window.onload = function() {
         map.loadData(mapData);
         foregroundMap.image = game.assets['sprites.png'];
         foregroundMap.loadData(foregroundData);
+        var collisionData = [];
+        for (var i = 0; i < foregroundData.length; i++) {
+            collisionData.push([]);
+            for (var j = 0; j < foregroundData[0].length; j++) {
+                var collision = foregroundData[i][j] % 13 > 1 ? 1 : 0;
+                collisionData[i][j] = collision;
+            }
+        }
+        map.collisionData = collisionData;
     };
     var setStage = function () {
         var stage = new Group();
@@ -66,7 +75,7 @@ window.onload = function() {
             if (this.xMovement || this.yMovement) {
                 var x = this.x + (this.xMovement ? this.xMovement / Math.abs(this.xMovement) * 16 : 0);
                 var y = this.y + (this.yMovement ? this.yMovement / Math.abs(this.yMovement) * 16 : 0);
-                if (0 <= x && x < map.width && 0 <= y && y < map.height) {
+                if (0 <= x && x < map.width && 0 <= y && y < map.height && !map.hitTest(x, y)) {
                     this.isMoving = true;
                     this.move();
                 }
