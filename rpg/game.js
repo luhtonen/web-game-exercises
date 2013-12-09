@@ -111,6 +111,48 @@ window.onload = function() {
             }
         }
     };
+    player.square = function() {
+        return {x: Math.floor(this.x / game.spriteWidth), y: Math.floor(this.y / game.spriteHeight)};
+    };
+    player.facingSquare = function() {
+        var playerSquare = player.square();
+        var facingSquare;
+        if (player.direction === 0) {
+            facingSquare = {x: playerSquare.x, y: playerSquare.y + 1};
+        } else if (player.direction === 1) {
+            facingSquare = {x: playerSquare.x, y: playerSquare.y - 1};
+        } else if (player.direction === 2) {
+            facingSquare = {x: playerSquare.x + 1, y: playerSquare.y};
+        } else if (player.direction === 3) {
+            facingSquare = {x: playerSquare.x - 1, y: playerSquare.y};
+        }
+        if ((facingSquare.x < 0 || facingSquare.x >= map.width / 16) ||
+                (facingSquare.y < 0 || facingSquare.y >= map.height / 16)) {
+            return null;
+        } else {
+            return facingSquare;
+        }
+    };
+    player.facing = function() {
+        var facingSquare = player.facingSquare();
+        if (!facingSquare) {
+            return null;
+        } else {
+            return foregroundData[facingSquare.y][facingSquare.x];
+        }
+    };
+    var npc = {
+        say: function(message) {
+            player.statusLabel.height = 12;
+            player.statusLabel.text = message;
+        }
+    };
+    var greeter = {
+        action: function() {
+            npc.say("hello");
+        }
+    };
+    var spriteRoles = [,,greeter,,,,,,,,,,,,,];
     game.focusViewport = function() {
         var x = Math.min((game.width - 16) / 2 - player.x, 0);
         var y = Math.min((game.height - 16) / 2 - player.y, 0);
@@ -126,7 +168,12 @@ window.onload = function() {
         player.on('enterframe', function () {
             player.move();
             if (game.input.a) {
-                player.displayStatus();
+                var playerFacing = player.facing();
+                if (!playerFacing || !spriteRoles[playerFacing]) {
+                    player.displayStatus();
+                } else {
+                    spriteRoles[playerFacing].action();
+                }
             }
         });
         game.rootScene.on('enterframe', function (e) {
