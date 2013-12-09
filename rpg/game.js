@@ -1,6 +1,7 @@
 enchant();
 window.onload = function() {
     var game = new Game(300, 300);
+    game.keybind(32, 'a');
     game.spriteSheetWidth = 256;
     game.spriteSheetHeight = 16;
     game.fps = 15;
@@ -29,6 +30,7 @@ window.onload = function() {
         stage.addChild(map);
         stage.addChild(player);
         stage.addChild(foregroundMap);
+        stage.addChild(player.statusLabel);
         game.rootScene.addChild(stage);
     };
     var player = new Sprite(game.spriteWidth, game.spriteHeight);
@@ -43,6 +45,29 @@ window.onload = function() {
         player.frame = player.spriteOffset + player.direction;
         player.image = new Surface(game.spriteSheetWidth, game.spriteSheetHeight);
         player.image.draw(game.assets['sprites.png']);
+        player.name = "Edu";
+        player.characterClass = "Rogue";
+        player.exp = 0;
+        player.level = 1;
+        player.gp = 100;
+        player.hp = 10;
+        player.maxHp = 10;
+        player.mp = 0;
+        player.MaxMp = 0;
+        player.statusLabel = new Label("");
+        player.statusLabel.width = game.width;
+        player.statusLabel.y = undefined;
+        player.statusLabel.x = undefined;
+        player.statusLabel.color = '#fff';
+        player.statusLabel.backgroundColor = '#000';
+    };
+    player.displayStatus = function () {
+        player.statusLabel.text = "--" + player.name + " the " + player.characterClass +
+                "<br />--HP, " + player.hp + "/" + player.maxHp +
+                "<br />--MP, " + player.mp + "/" + player.MaxMp +
+                "<br />--Exp, " + player.exp +
+                "<br />--Level, " + player.level +
+                "<br />--GP, " + player.gp;
     };
     player.move = function() {
         this.frame = this.spriteOffset + this.direction * 2 + this.walk;
@@ -62,15 +87,19 @@ window.onload = function() {
             if (game.input.up) {
                 this.direction = 1;
                 this.yMovement = -4;
+                player.statusLabel.text = "";
             } else if (game.input.right) {
                 this.direction = 2;
                 this.xMovement = 4;
+                player.statusLabel.text = "";
             } else if (game.input.left) {
                 this.direction = 3;
                 this.xMovement = -4;
+                player.statusLabel.text = "";
             } else if (game.input.down) {
                 this.direction = 0;
                 this.yMovement = 4;
+                player.statusLabel.text = "";
             }
             if (this.xMovement || this.yMovement) {
                 var x = this.x + (this.xMovement ? this.xMovement / Math.abs(this.xMovement) * 16 : 0);
@@ -96,6 +125,9 @@ window.onload = function() {
         setStage();
         player.on('enterframe', function () {
             player.move();
+            if (game.input.a) {
+                player.displayStatus();
+            }
         });
         game.rootScene.on('enterframe', function (e) {
             game.focusViewport();
