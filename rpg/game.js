@@ -4,6 +4,8 @@ window.onload = function() {
     game.keybind(32, 'a');
     game.spriteSheetWidth = 256;
     game.spriteSheetHeight = 16;
+    game.itemSpriteSheetWidth = 64;
+    game.preload(['sprites.png', 'items.png']);
     game.fps = 15;
     game.spriteWidth = 16;
     game.spriteHeight = 16;
@@ -67,7 +69,15 @@ window.onload = function() {
                 "<br />--MP, " + player.mp + "/" + player.MaxMp +
                 "<br />--Exp, " + player.exp +
                 "<br />--Level, " + player.level +
-                "<br />--GP, " + player.gp;
+                "<br />--GP, " + player.gp +
+                "<br /><br />--Inventory:";
+        player.statusLabel.height = 170;
+        player.showInventory();
+    };
+    player.clearStatus = function() {
+        player.statusLabel.text = "";
+        player.statusLabel.height = 0;
+        player.hideInventory();
     };
     player.move = function() {
         this.frame = this.spriteOffset + this.direction * 2 + this.walk;
@@ -87,19 +97,19 @@ window.onload = function() {
             if (game.input.up) {
                 this.direction = 1;
                 this.yMovement = -4;
-                player.statusLabel.text = "";
+                player.clearStatus();
             } else if (game.input.right) {
                 this.direction = 2;
                 this.xMovement = 4;
-                player.statusLabel.text = "";
+                player.clearStatus();
             } else if (game.input.left) {
                 this.direction = 3;
                 this.xMovement = -4;
-                player.statusLabel.text = "";
+                player.clearStatus();
             } else if (game.input.down) {
                 this.direction = 0;
                 this.yMovement = 4;
-                player.statusLabel.text = "";
+                player.clearStatus();
             }
             if (this.xMovement || this.yMovement) {
                 var x = this.x + (this.xMovement ? this.xMovement / Math.abs(this.xMovement) * 16 : 0);
@@ -139,6 +149,31 @@ window.onload = function() {
             return null;
         } else {
             return foregroundData[facingSquare.y][facingSquare.x];
+        }
+    };
+    player.visibleItems = [];
+    player.itemSurface = new Surface(game.itemSpriteSheetWidth, game.spriteSheetHeight);
+    player.inventory = [0, 1, 2, 3];
+    player.hideInventory = function() {
+        for (var i = 0; i < player.visibleItems.length; i++) {
+            player.visibleItems[i].remove();
+        }
+        player.visibleItems = [];
+    };
+    player.showInventory = function() {
+        if (player.visibleItems.length === 0) {
+            player.itemSurface.draw(game.assets['items.png']);
+            for (var i = 0; i < player.inventory.length; i++) {
+                var item = new Sprite(game.spriteWidth, game.spriteHeight);
+                item.y = 130;
+                item.x = 30 + 70*i;
+                item.frame = player.inventory[i];
+                item.scaleX = 2;
+                item.scaleY = 2;
+                item.image = player.itemSurface;
+                player.visibleItems.push(item);
+                game.rootScene.addChild(item);
+            }
         }
     };
     var npc = {
