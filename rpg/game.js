@@ -10,6 +10,10 @@ window.onload = function() {
     game.spriteWidth = 16;
     game.spriteHeight = 16;
     game.preload('sprites.png');
+    game.items = [{price: 1000, description: "Hurter", id: 0},
+        {price: 5000, description: "Drg. Paw", id: 1},
+        {price: 5000, description: "Ice Magic", id: 2},
+        {price: 60, description: "Chess Set", id: 3}];
     var map = new Map(game.spriteWidth, game.spriteHeight);
     var foregroundMap = new Map(game.spriteWidth, game.spriteHeight);
     var setMaps = function() {
@@ -72,7 +76,7 @@ window.onload = function() {
                 "<br />--GP, " + player.gp +
                 "<br /><br />--Inventory:";
         player.statusLabel.height = 170;
-        player.showInventory();
+        player.showInventory(0);
     };
     player.clearStatus = function() {
         player.statusLabel.text = "";
@@ -153,26 +157,26 @@ window.onload = function() {
     };
     player.visibleItems = [];
     player.itemSurface = new Surface(game.itemSpriteSheetWidth, game.spriteSheetHeight);
-    player.inventory = [0, 1, 2, 3];
+    player.inventory = [];
     player.hideInventory = function() {
         for (var i = 0; i < player.visibleItems.length; i++) {
             player.visibleItems[i].remove();
         }
         player.visibleItems = [];
     };
-    player.showInventory = function() {
+    player.showInventory = function(yOffset) {
         if (player.visibleItems.length === 0) {
             player.itemSurface.draw(game.assets['items.png']);
             for (var i = 0; i < player.inventory.length; i++) {
                 var item = new Sprite(game.spriteWidth, game.spriteHeight);
-                item.y = 130;
+                item.y = 130 + yOffset;
                 item.x = 30 + 70*i;
                 item.frame = player.inventory[i];
                 item.scaleX = 2;
                 item.scaleY = 2;
                 item.image = player.itemSurface;
                 player.visibleItems.push(item);
-                game.rootScene.addChild(item);
+                game.currentScene.addChild(item);
             }
         }
     };
@@ -187,7 +191,124 @@ window.onload = function() {
             npc.say("hello");
         }
     };
-    var spriteRoles = [,,greeter,,,,,,,,,,,,,];
+    var shopScene = new Scene();
+    var cat = {
+        action: function() {
+            game.pushScene(shopScene);
+        }
+    };
+    var spriteRoles = [,,greeter,,cat,,,,,,,,,,,];
+    var setShopping = function() {
+        var shop = new Group();
+        shop.itemSelected = 0;
+        shop.shoppingFunds = function() {
+            return "Gold: " + player.gp;
+        };
+        shop.drawManeki = function() {
+            var image = new Surface(game.spriteSheetWidth, game.spriteSheetHeight);
+            var maneki = new Sprite(game.spriteWidth, game.spriteHeight);
+            maneki.image = image;
+            image.draw(game.assets['sprites.png']);
+            maneki.frame = 4;
+            maneki.y = 10;
+            maneki.x = 10;
+            maneki.scaleX = 2;
+            maneki.scaleY = 2;
+            this.addChild(maneki);
+            this.message.x = 40;
+            this.message.y = 10;
+            this.message.color = "#fff";
+            this.addChild(this.message);
+        };
+        shop.drawItemsForSale = function() {
+            for (var i = 0; i < game.items.length; i++) {
+                var image = new Surface(game.itemSpriteSheetWidth, game.spriteSheetHeight);
+                var item = new Sprite(game.spriteWidth, game.spriteHeight);
+                image.draw(game.assets['items.png']);
+                itemLocationX = 30 + 70*i;
+                itemLocationY = 70;
+                item.y = itemLocationY;
+                item.x = itemLocationX;
+                item.frame = i;
+                item.scaleX = 2;
+                item.scaleY = 2;
+                item.image = image;
+                this.addChild(item);
+                var itemDescription = new Label(game.items[i].price + "<br />"
+                        + game.items[i].description);
+                itemDescription.x = itemLocationX - 8;
+                itemDescription.y = itemLocationY + 40;
+                itemDescription.color = "#fff";
+                this.addChild(itemDescription);
+                if (i === this.itemSelected) {
+                    var image = new Surface(game.spriteSheetWidth, game.spriteSheetHeight);
+                    this.itemSelector = new Sprite(game.spriteWidth, game.spriteHeight);
+                    image.draw(game.assets['sprites.png']);
+                    itemLocationX = 30 + 70*i;
+                    itemLocationY = 160;
+                    this.itemSelector.scaleX = 2;
+                    this.itemSelector.scaleY = 2;
+                    this.itemSelector.y = itemLocationY;
+                    this.itemSelector.x = itemLocationX;
+                    this.itemSelector.frame = 7;
+                    this.itemSelector.image = image;
+                    this.addChild(this.itemSelector);
+                }
+            }
+        };
+        shop.on('enter', function() {
+            shoppingFunds.text = shop.shoppingFunds();
+        });
+        shop.on('enterframe', function() {
+            setTimeout(function() {
+                if (game.input.a) {
+                    shop.attempToBuy();
+                } else if (game.input.down) {
+                    shop.message.text = shop.farewell;
+                    setTimeout(function() {
+                        game.popScene();
+                        shop.message.text = shop.greeting;
+                    }, 1000);
+                } else if (game.input.left) {
+                    shop.itemSelected = shop.itemSelected + game.items.length - 1;
+                    shop.itemSelected = shop.itemSelected % game.items.length;
+                    shop.itemSelector.x = 30 + 70 * shop.itemSelected;
+                    shop.message.text = shop.greeting;
+                } else if (game.input.right) {
+                    shop.itemSelected = (shop.itemSelected + 1) % game.items.length;
+                    shop.itemSelector.x = 30 + 70 * shop.itemSelected;
+                    shop.message.text = shop.greeting;
+                }
+            }, 500);
+            player.showInventory(100);
+            shoppingFunds.text = shop.shoppingFunds();
+        });
+        shop.attempToBuy = function() {
+            var itemPrice = game.items[this.itemSelected].price;
+            if (player.gp < itemPrice) {
+                this.message.text = this.apology;
+            } else {
+                player.visibleItems = [];
+                player.gp = player.gp - itemPrice;
+                player.inventory.push(game.items[this.itemSelected].id);
+                this.message.text = this.sale;
+            }
+        };
+        shop.greeting = "Hi! I'm Maneki. Meow. I sell things.";
+        shop.apology = "Meow... sorry, you don't have money for this.";
+        shop.sale = "Here ya go!";
+        shop.farewell = "Come again! Meow!";
+        shop.message = new Label(shop.greeting);
+        shop.drawManeki();
+        var shoppingFunds = new Label(shop.shoppingFunds());
+        shoppingFunds.color = "#fff";
+        shoppingFunds.y = 200;
+        shoppingFunds.x = 10;
+        shop.addChild(shoppingFunds);
+        shop.drawItemsForSale();
+        shopScene.backgroundColor = "#000";
+        shopScene.addChild(shop);
+    };
     game.focusViewport = function() {
         var x = Math.min((game.width - 16) / 2 - player.x, 0);
         var y = Math.min((game.height - 16) / 2 - player.y, 0);
@@ -200,6 +321,7 @@ window.onload = function() {
         setMaps();
         setPlayer();
         setStage();
+        setShopping();
         player.on('enterframe', function () {
             player.move();
             if (game.input.a) {
