@@ -53,9 +53,26 @@ window.onload = function() {
         player.image.draw(game.assets['sprites.png']);
         player.name = "Edu";
         player.characterClass = "Rogue";
-        player.exp = 0;
-        player.level = 1;
-        player.gp = 100;
+        if (window.localStorage.getItem('exp')) {
+            player.exp = parseInt(window.localStorage.getItem('exp'));
+        } else {
+            player.exp = 0;
+        }
+        if (window.localStorage.getItem('level')) {
+            player.level = parseInt(window.localStorage.getItem('level'));
+        } else {
+            player.level = 1;
+        }
+        if (window.localStorage.getItem('gp')) {
+            player.gp = parseInt(window.localStorage.getItem('gp'));
+        } else {
+            player.gp = 100;
+        }
+        if (window.localStorage.getItem('inventory')) {
+            player.inventory = JSON.parse(window.localStorage.getItem('inventory'));
+        } else {
+            player.inventory = [];
+        }
         player.levelStats = [{},{attack: 4, maxHp: 10, maxMp: 0, maxExp: 10},
             {attack: 6, maxHp: 14, maxMp: 0, maxExp: 30},
             {attack: 7, maxHp: 20, maxMp: 5, maxExp: 50}];
@@ -161,7 +178,6 @@ window.onload = function() {
     };
     player.visibleItems = [];
     player.itemSurface = new Surface(game.itemSpriteSheetWidth, game.spriteSheetHeight);
-    player.inventory = [];
     player.hideInventory = function() {
         for (var i = 0; i < player.visibleItems.length; i++) {
             player.visibleItems[i].remove();
@@ -501,6 +517,17 @@ window.onload = function() {
         game.rootScene.firstChild.y = y;
     };
     game.onload = function() {
+        game.storable = ['exp', 'level', 'gp', 'inventory'];
+        game.saveToLocalStorage = function() {
+            for (var i = 0; i < game.storable.length; i++) {
+                if (game.storable[i] === 'inventory') {
+                    window.localStorage.setItem(game.storable[i], JSON.stringify(player[game.storable[i]]));
+                } else {
+                    window.localStorage.setItem(game.storable[i], player[game.storable[i]]);
+                }
+            }
+        };
+        setInterval(game.saveToLocalStorage, 5000);
         setMaps();
         setPlayer();
         setStage();
