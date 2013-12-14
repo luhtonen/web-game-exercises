@@ -21,6 +21,15 @@ window.onload = function() {
         red_flag: [13,0,1,1],
         selected_box: [14,0,1,1]
     });
+    var unitClicked = null;
+    var moveUnit = function(place) {
+        var xDistance = Math.abs(unitClicked.x - place.x);
+        var yDistance = Math.abs(unitClicked.y - place.y);
+        var distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)*4);
+        unitClicked.tween({x: place.x, y: place.y}, Math.round(distance*3));
+        unitClicked.addComponent(unitClicked.trueSprite);
+        unitClicked = null;
+    };
     var setMap = function() {
         for (var x = 0; x < mapWidth; x++) {
             for (var y = 0; y < mapHeight; y++) {
@@ -35,6 +44,10 @@ window.onload = function() {
                 }).bind("MouseOut", function() {
                     this.addComponent("grass");
                     this.removeComponent("selected_grass");
+                }).bind("Click", function() {
+                    if (unitClicked) {
+                        moveUnit(this);
+                    }
                 });
                 iso.place(x, y, 0, tile);
             }
@@ -43,10 +56,23 @@ window.onload = function() {
     setMap();
     var placeUnits = function(units) {
         for (var i = 0; i < units.length; i++) {
-            var componentList = "2D, DOM, Mouse, " + units[i].color + "_" + units[i].type;
+            var unitSprite = units[i].color + "_" + units[i].type;
+            var componentList = "2D, DOM, Mouse, Tween, " + unitSprite;
             var unit = Crafty.e(componentList)
                 .attr('z', 100)
                 .areaMap([7,0],[8,0],[14,3],[14,8],[8,12],[7,12],[2,8],[2,3]);
+            unit.trueSprite = unitSprite;
+            unit.bind("Click", function() {
+                if (unitClicked) {
+                    if (unitClicked !== this) {
+                        moveUnit(this);
+                    }
+                } else {
+                    this.removeComponent(this.trueSprite);
+                    this.addComponent('selected_box');
+                    unitClicked = this;
+                }
+            });
             iso.place(units[i].xPosition,units[i].yPosition,0, unit);
         }
     };
