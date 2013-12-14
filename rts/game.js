@@ -41,8 +41,17 @@ window.onload = function() {
         }
     };
     setMap();
+    var placeUnits = function(units) {
+        for (var i = 0; i < units.length; i++) {
+            var componentList = "2D, DOM, Mouse, " + units[i].color + "_" + units[i].type;
+            var unit = Crafty.e(componentList)
+                .attr('z', 100)
+                .areaMap([7,0],[8,0],[14,3],[14,8],[8,12],[7,12],[2,8],[2,3]);
+            iso.place(units[i].xPosition,units[i].yPosition,0, unit);
+        }
+    };
     var socket = io.connect('http://localhost:1234');
-    socket.on('started', function(data) {
-        console.log(data);
+    socket.on('place units', function(units) {
+        placeUnits(units);
     });
 };
