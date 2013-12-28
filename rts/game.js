@@ -55,29 +55,77 @@ window.onload = function() {
     };
     setMap();
     var placeUnits = function(units) {
+        player.units = [];
+        player.enemyUnits = [];
         for (var i = 0; i < units.length; i++) {
-            var unitSprite = units[i].color + "_" + units[i].type;
+            var unitInfo = units[i];
+            var controllable = unitInfo.color === player.color;
+            if (controllable) {
+                unitSprite = unitInfo.color + "_" + unitInfo.type;
+            } else {
+                unitSprite = "selected_box";
+            }
             var componentList = "2D, DOM, Mouse, Tween, " + unitSprite;
             var unit = Crafty.e(componentList)
                 .attr('z', 100)
                 .areaMap([7,0],[8,0],[14,3],[14,8],[8,12],[7,12],[2,8],[2,3]);
+            unit.controllable = controllable;
             unit.trueSprite = unitSprite;
+            unit.xPosition = function() {
+                return this.x;
+            };
+            unit.yPosition = function() {
+                return this.y;
+            };
             unit.bind("Click", function() {
                 if (unitClicked) {
                     if (unitClicked !== this) {
                         moveUnit(this);
                     }
                 } else {
-                    this.removeComponent(this.trueSprite);
-                    this.addComponent('selected_box');
-                    unitClicked = this;
+                    if (this.controllable) {
+                        this.removeComponent(this.trueSprite);
+                        this.addComponent('selected_box');
+                        unitClicked = this;
+                    }
                 }
             });
-            iso.place(units[i].xPosition,units[i].yPosition,0, unit);
+            iso.place(unitInfo.xPosition, unitInfo.yPosition, 0, unit);
+            if (unit.controllable) {
+                player.units.push(unit);
+            } else {
+                player.enemyUnits.push(unit);
+            }
         }
     };
     var socket = io.connect('http://localhost:1234');
     socket.on('place units', function(units) {
         placeUnits(units);
+        var updateInterval = 1000/Crafty.timer.getFPS();
+        setInterval(function() {
+            socket.emit('update positions', player.unitsWithLimitedData());
+        }, updateInterval);
+    });
+    socket.on('update enemy positions', function(enemies) {
+        player.updateEnemyPositions(enemies);
+    });
+    socket.on('initialize player', function(playerData) {
+        player = playerData;
+        player.unitsWithLimitedData = function() {
+            unitsToReturn = [];
+            for (var i = 0; i < this.units.length; i++) {
+                unitsToReturn.push({x: this.units[i].x, y: this.units[i].y});
+            }
+            return unitsToReturn;
+        };
+        player.updateEnemyPositions = function(enemies) {
+            for (var i = 0; i < this.enemyUnits.length; i++) {
+                this.enemyUnits[i].x = enemies[i].x;
+                this.enemyUnits[i].y = enemies[i].y;
+            }
+        };
+    });
+    socket.on('user disconnected', function() {
+        alert("Your opponent left or refreshed. Refresh to join the other room.");
     });
 };

@@ -81,9 +81,33 @@ var placeUnits = function() {
         yPosition: pickY(0)}
     ];
 };
+var playerId = 0;
+var playerColor = function() {
+    return (!(playerId % 2)) ? "red" : "blue";
+};
+var roomId = function() {
+    return "room" + Math.floor(playerId / 2);
+};
+var units;
 var io = require('socket.io').listen(1234);
 
 io.sockets.on('connection', function(socket) {
-    var units = placeUnits();
+    socket.playerColor = playerColor();
+    socket.roomId = roomId();
+    var player = {id: playerId,
+        color: socket.playerColor,
+        room: socket.roomId};
+    socket.emit('initialize player', player);
+    socket.join(socket.roomId);
+    if (!(playerId % 2)) {
+        units = placeUnits();
+    }
     socket.emit('place units', units);
+    socket.on('update positions', function(data) {
+        socket.broadcast.to(socket.roomId).emit('update enemy positions', data);
+    });
+    playerId = playerId + 1;
+    socket.on('disconnect', function() {
+        socket.broadcast.to(socket.roomId).emit('user disconnected');
+    });
 });
